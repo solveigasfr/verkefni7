@@ -4,7 +4,6 @@
  * Leikur sem snýst um að giska á tölu milli 0 og 100
  */
 
-
 /**
  * Global fylki sem geymir fjölda ágiskana í leikjum
  * Ef fylki er tómt hefur enginn leikur verið spilaður.
@@ -13,15 +12,14 @@
  *  - Seinni leikur kláraðist í þrem ágiskunum.
  */
 
- const games = [];
+const games = [];
 
-
- /**
-  * Byrjar leikinn okkar með því að kalla í play().
-  * Eftir að play() klárar þá er boðið notandanum að spila annann leik með confirm()
-  * Ef notandi ýtir á "ok" þá er annar leikur spilaður.
-  * Ef notandi ýtir á "cancel" þá er sótt niðurstöður með getResults() og þær birtar með alert().
-  */
+/**
+ * Byrjar leikinn okkar með því að kalla í play().
+ * Eftir að play() klárar þá er boðið notandanum að spila annann leik með confirm()
+ * Ef notandi ýtir á "ok" þá er annar leikur spilaður.
+ * Ef notandi ýtir á "cancel" þá er sótt niðurstöður með getResults() og þær birtar með alert().
+ */
 function start() {
   play();
 }
@@ -41,20 +39,70 @@ function start() {
  * Þarf aðútfæra með lykkju og flæðisstýringum
  */
 function play() {
-  const random = randomNumber(1,100;
+  let cnt = 0;
+  let response = '';
+  let inputNumber = null;
+  const random = randomNumber(1, 100);
+
+  while (response !== 'Rétt') {
+    inputNumber = prompt('Slá inn tölu á milli 0 og 100');
+
+    // Ef notandi ýtir á Cancel í miðjum leik
+    if (inputNumber === null) {
+      break;
+    }
+
+    const parsedNumber = parseGuess(inputNumber);
+    response = getResponse(parsedNumber, random);
+    cnt += 1;
+
+    // Ef ágiskun er rétt
+    if (response === 'Rétt') {
+      alert(response);
+      break;
+    }
+
+    alert(response);
+  }
+
+  if (inputNumber === null) {
+    alert('Hætt í leik');
+    alert(getResults(inputNumber));
+  }
+
+  games.push(cnt);
+
+  //Bjóða upp á annan leik. 
+  if (confirm('Spila annan leik?')) {
+    play();
+    //Ef notandi ákveður að spila ekki annan leik eru birtar upplýsingar um spilaða leiki.
+  } else {
+    alert(getResults(inputNumber));
+  }
 }
 
 /**
  * Skilar niðurstöðum um spilaða leiki sem streng.
- * Fjöldi liekja er skilað ásamt meðalfjölda giska, t.d.:
+ * Fjöldi leikja er skilað ásamt meðalfjölda giska, t.d.:
  *    "þú spilaðir 10 leiki
  *     Meðalfjöldi ágiskana var 5"
  * ATH að meðalfjöldi kemur í nýrri línu.
  * Ef enginn leikur var spilaður er skilað:
  *    "Þú spilaðir engann leik >_<"
  */
-function getResults(){
+function getResults(inputNumber) {
+  if (games.length === 0) {
+    return 'Þú spilaðir engann leik';
+  }
 
+  //Stafsetning á niðurstöðum um spilaða leiki: "Þú spilaðir X leik/i"
+  const gameSpelling = games.length === 1 ? 'leik' : 'leiki';
+
+  if (inputNumber === null) {
+    return `Þú spilaðir ${games.length} ${gameSpelling}`;
+  }
+
+  return `Þú spilaðir ${games.length} ${gameSpelling}\nMeðalfjöldi ágiskanna var ${calculateAverage(games)}`;
 }
 
 /**
@@ -65,16 +113,28 @@ function getResults(){
  * 
  * þarf að útfæra með lykkju.
  */
-function calculateAverage(){
+function calculateAverage(games) {
+  let cnt = 0;
 
+  for (let i = 0; i < games.length; i++) {
+    cnt += games[i];
+  }
+
+  return (cnt / games.length).toFixed(2);
 }
 
 /**
  * tekur in input sem streng og skilar þeirri tölu sem hægt er að ná þar úr.
  * Ef ekki er hægt að ná tölu úr input er skilað null
  */
-function parseGuess(input){
+function parseGuess(input) {
+  const parsedNumber = parseInt(input);
 
+  if (isNaN(parsedNumber)) {
+    return null;
+  }
+
+  return parsedNumber;
 }
 
 /**
@@ -92,8 +152,23 @@ function parseGuess(input){
  * Þarf að útfæra með flæðistýringu.
  * Math.abs skilar algildi tölu: |a| = Math.abs(a)
  */
-function getResponse(guess, correct){
-  return 'Ekki rétt';
+function getResponse(guess, correct) {
+  if (guess < 0 || isNaN(guess)) {
+    return 'Ekki rétt';
+  } else if (guess === correct) {
+    return 'Rétt';
+  } else if (Math.abs(correct - guess) < 5) {
+    return 'Mjög nálægt';
+  } else if (Math.abs(correct - guess) < 10) {
+    return 'Nálægt';
+  } else if (Math.abs(correct - guess) < 20) {
+    return 'Frekar langt frá';
+  } else if (Math.abs(correct - guess) < 50) {
+    return 'Langt frá';
+  }
+
+  return 'Mjög langt frá';
+
 }
 
 /**
